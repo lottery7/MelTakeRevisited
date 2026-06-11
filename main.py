@@ -485,6 +485,7 @@ void main(){gl_Position=vec4(vertex_position,0,1);}"""
         self.setWindowTitle("Visualizer")
         self.player, self.analyzer, self.program, self.vao, self.vbo, self.texture, self.bg_size, self.t0 = player, analyzer, None, None, None, None, (0, 0), time.monotonic()
         self.pulse_strength, self.background_strength, self.vignette_strength, self.visual_scale = 1.0, 1.0, 0.78, 1.0
+        self.bass_motion_strength, self.bass_blur_strength = 1.0, 0.6
         self.background = background
         self.error = ""
         self.watcher = QFileSystemWatcher([str(SHADER)], self)
@@ -573,6 +574,7 @@ void main(){gl_Position=vec4(vertex_position,0,1);}"""
             GL.glClear(GL.GL_COLOR_BUFFER_BIT)
             return
         spec, max_mag = self.analyzer.update() if self.player.playbackState() == QMediaPlayer.PlayingState else (self.analyzer.spectrum, float(self.analyzer.spectrum.mean()))
+        bass_mag = float(np.mean(spec[:8])) if spec.size else 0.0
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.program.bind()
         GL.glBindVertexArray(self.vao)
@@ -583,6 +585,7 @@ void main(){gl_Position=vec4(vertex_position,0,1);}"""
         GL.glUniform1fv(GL.glGetUniformLocation(pid, "u_spectrum"), 64, spec.astype(np.float32))
         GL.glUniform1i(GL.glGetUniformLocation(pid, "u_spectrum_size"), 64)
         GL.glUniform1f(GL.glGetUniformLocation(pid, "u_max_magnitude"), max_mag)
+        GL.glUniform1f(GL.glGetUniformLocation(pid, "u_bass_magnitude"), bass_mag)
         dur = max(1, self.player.duration())
         GL.glUniform1f(GL.glGetUniformLocation(pid, "u_audio_position"), self.player.position() / dur)
         GL.glUniform1i(GL.glGetUniformLocation(pid, "u_has_background"), bool(self.texture))
@@ -591,6 +594,8 @@ void main(){gl_Position=vec4(vertex_position,0,1);}"""
         GL.glUniform1f(GL.glGetUniformLocation(pid, "u_background_strength"), self.background_strength)
         GL.glUniform1f(GL.glGetUniformLocation(pid, "u_vignette_strength"), self.vignette_strength)
         GL.glUniform1f(GL.glGetUniformLocation(pid, "u_visual_scale"), self.visual_scale)
+        GL.glUniform1f(GL.glGetUniformLocation(pid, "u_bass_motion_strength"), self.bass_motion_strength)
+        GL.glUniform1f(GL.glGetUniformLocation(pid, "u_bass_blur_strength"), self.bass_blur_strength)
         if self.texture:
             GL.glActiveTexture(GL.GL_TEXTURE0)
             GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
@@ -608,6 +613,7 @@ class MelTake(QMainWindow):
         self.current = self.state["current"]
         self.mode = self.state["mode"]
         self.animation = self.state["animation"]
+        self.restore_position = 0
         self.player, self.audio = QMediaPlayer(self), QAudioOutput(self)
         self.player.setAudioOutput(self.audio)
         self.audio.setVolume(self.state["volume"] / 100)
@@ -617,17 +623,17 @@ class MelTake(QMainWindow):
         self.buffer_output.audioBufferReceived.connect(self.analyzer.push)
         self.player.setAudioBufferOutput(self.buffer_output)
         self.build_ui(background)
+        self.restore_timer = QTimer(self, interval=120, timeout=self.restore_saved_position)
         self.refresh_playlists()
         self.show_playlist(self.current)
-        if self.playlists["All tracks"]:
-            self.display(meta(self.playlists["All tracks"][0]))
         self.player.positionChanged.connect(self.tick)
-        self.player.durationChanged.connect(self.progress.setMaximum)
+        self.player.durationChanged.connect(self.on_duration_changed)
         self.player.mediaStatusChanged.connect(self.autonext)
+        self.restore_last_track()
         self.shortcuts()
 
     def load_state(self):
-        state = {"playlists": {"All tracks": []}, "current": "All tracks", "mode": "loop", "volume": 60, "muted": False, "sidebar_width_percent": 25, "animation": {"pulse": 100, "background": 100, "vignette": 78, "size": 100}}
+        state = {"playlists": {"All tracks": []}, "current": "All tracks", "mode": "loop", "volume": 60, "muted": False, "sidebar_width_percent": 25, "last_track": "", "last_position": 0, "animation": {"pulse": 100, "background": 100, "vignette": 78, "size": 100, "bass_motion": 100, "bass_blur": 60}}
         if STATE.exists():
             try:
                 data = json.loads(STATE.read_text())
@@ -661,7 +667,12 @@ class MelTake(QMainWindow):
             state["sidebar_width_percent"] = max(18, min(40, float(state["sidebar_width_percent"])))
         except (TypeError, ValueError):
             state["sidebar_width_percent"] = 25
-        for key, default in {"pulse": 100, "background": 100, "vignette": 78, "size": 100}.items():
+        state["last_track"] = state["last_track"] if isinstance(state["last_track"], str) and Path(state["last_track"]).exists() else ""
+        try:
+            state["last_position"] = max(0, int(state["last_position"]))
+        except (TypeError, ValueError):
+            state["last_position"] = 0
+        for key, default in {"pulse": 100, "background": 100, "vignette": 78, "size": 100, "bass_motion": 100, "bass_blur": 60}.items():
             try:
                 state["animation"][key] = int(state["animation"].get(key, default))
             except (TypeError, ValueError):
@@ -669,7 +680,8 @@ class MelTake(QMainWindow):
         return state
 
     def save_state(self):
-        data = {"playlists": self.playlists, "current": self.current, "mode": self.mode, "volume": self.volume.value() if hasattr(self, "volume") else self.state["volume"], "muted": self.audio.isMuted(), "sidebar_width_percent": getattr(self, "library_width_percent", self.state["sidebar_width_percent"]), "animation": self.animation}
+        last_track = self.player.source().toLocalFile() if hasattr(self, "player") else ""
+        data = {"playlists": self.playlists, "current": self.current, "mode": self.mode, "volume": self.volume.value() if hasattr(self, "volume") else self.state["volume"], "muted": self.audio.isMuted(), "sidebar_width_percent": getattr(self, "library_width_percent", self.state["sidebar_width_percent"]), "last_track": last_track or self.state["last_track"], "last_position": self.player.position() if last_track else self.state["last_position"], "animation": self.animation}
         STATE.write_text(json.dumps(data, indent=2))
 
     def build_ui(self, background: str):
@@ -845,6 +857,8 @@ class MelTake(QMainWindow):
             self.setting_row("Background", "background", 0, 160),
             self.setting_row("Vignette", "vignette", 0, 100),
             self.setting_row("Size", "size", 70, 130),
+            self.setting_row("Bass motion", "bass_motion", 0, 200),
+            self.setting_row("Bass blur", "bass_blur", 0, 200),
         ):
             animation_layout.addLayout(row)
         animation_layout.addStretch()
@@ -916,6 +930,39 @@ class MelTake(QMainWindow):
         if save:
             self.save_state()
 
+    def restore_last_track(self):
+        paths = self.playlists["All tracks"]
+        if not paths:
+            self.display(None)
+            return
+        path = self.state["last_track"] if self.state["last_track"] in paths else paths[0]
+        self.restore_position = self.state["last_position"] if path == self.state["last_track"] else 0
+        self.player.setSource(QUrl.fromLocalFile(path))
+        self.play.setChecked(False)
+        self.play.setIcon(icon("play"))
+        self.display(meta(path))
+        self.restore_saved_position()
+
+    def on_duration_changed(self, duration: int):
+        self.progress.setMaximum(duration)
+        self.restore_saved_position(duration)
+
+    def restore_saved_position(self, duration: int | None = None):
+        duration = self.player.duration() if duration is None else duration
+        if self.restore_position and duration <= 0:
+            if not self.restore_timer.isActive():
+                self.restore_timer.start()
+            return
+        if self.restore_position and duration > 0:
+            self.restore_timer.stop()
+            position = min(self.restore_position, max(0, duration - 1000))
+            self.restore_position = 0
+            self.player.setPosition(position)
+
+    def closeEvent(self, event):
+        self.save_state()
+        super().closeEvent(event)
+
     def eventFilter(self, obj, event):
         if obj is self.library:
             x = event.position().x() if hasattr(event, "position") else -1
@@ -941,6 +988,8 @@ class MelTake(QMainWindow):
         self.visualizer.background_strength = self.animation["background"] / 100
         self.visualizer.vignette_strength = self.animation["vignette"] / 100
         self.visualizer.visual_scale = self.animation["size"] / 100
+        self.visualizer.bass_motion_strength = self.animation["bass_motion"] / 100
+        self.visualizer.bass_blur_strength = self.animation["bass_blur"] / 100
 
     def set_animation(self, key: str, value: int):
         self.animation[key] = value
@@ -1122,12 +1171,14 @@ class MelTake(QMainWindow):
         self.play.setChecked(True)
         self.play.setIcon(icon("pause"))
         self.display(meta(path))
+        self.save_state()
 
     def play_pause(self):
         if self.player.playbackState() == QMediaPlayer.PlayingState:
             self.player.pause()
             self.play.setChecked(False)
             self.play.setIcon(icon("play"))
+            self.save_state()
         else:
             if self.player.source().isEmpty() and self.playlists[self.current]:
                 self.play_index(max(0, self.current_index()))
@@ -1135,6 +1186,7 @@ class MelTake(QMainWindow):
                 self.player.play()
             self.play.setChecked(True)
             self.play.setIcon(icon("pause"))
+            self.save_state()
 
     def current_index(self):
         src = self.player.source().toLocalFile()
@@ -1155,9 +1207,12 @@ class MelTake(QMainWindow):
             self.play_index((self.current_index() - 1) % len(paths))
 
     def autonext(self, status):
+        if status in {QMediaPlayer.LoadedMedia, QMediaPlayer.BufferedMedia}:
+            self.restore_saved_position()
         if status == QMediaPlayer.EndOfMedia:
             self.player.setPosition(0)
             (self.player.play() if self.mode == "one" else self.next_track())
+            self.save_state()
 
     def toggle_random(self):
         self.mode = "random" if self.random.isChecked() else "loop"

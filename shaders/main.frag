@@ -9,6 +9,7 @@ uniform vec2 u_resolution;
 uniform float u_spectrum[64];
 uniform int u_spectrum_size;
 uniform float u_max_magnitude;
+uniform float u_bass_magnitude;
 uniform float u_audio_position;
 uniform sampler2D u_background;
 uniform vec2 u_background_resolution;
@@ -17,6 +18,8 @@ uniform float u_pulse_strength;
 uniform float u_background_strength;
 uniform float u_vignette_strength;
 uniform float u_visual_scale;
+uniform float u_bass_motion_strength;
+uniform float u_bass_blur_strength;
 
 
 const float PI = 3.14159265359;
@@ -111,7 +114,15 @@ vec3 get_background_color() {
     float scale = max(u_resolution.x / u_background_resolution.x, u_resolution.y / u_background_resolution.y);
     vec2 size = u_background_resolution * scale;
     vec2 p = (gl_FragCoord.xy - .5 * (u_resolution - size)) / size;
-    vec2 px = 4. / size;
+    float bass = smoothstep(.08, .68, scale_magnitude(u_bass_magnitude));
+    float motion = bass * u_bass_motion_strength;
+    float zoom = 1. + .035 * motion;
+    vec2 shake = motion * vec2(
+        sin(u_time * 47. + sin(u_time * 13.)),
+        cos(u_time * 39. + sin(u_time * 17.))
+    ) * .012;
+    p = (p - .5) / zoom + .5 + shake;
+    vec2 px = (4. + 10. * bass * u_bass_blur_strength) / size;
     vec3 color = (
         texture(u_background, p).rgb * .28 +
         texture(u_background, p + vec2(px.x, 0)).rgb * .12 +
