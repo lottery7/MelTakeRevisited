@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="play" viewBox="0 0 64 64" fill="none">
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M23 18 L23 46 L45 32 Z"/>
+  </symbol>
+  <symbol id="pause" viewBox="0 0 64 64" fill="none">
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M26 19 V45"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M38 19 V45"/>
+  </symbol>
+  <symbol id="previous" viewBox="0 0 64 64" fill="none">
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M22 18 V46"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M45 18 L25 32 L45 46 V18 Z"/>
+  </symbol>
+  <symbol id="next" viewBox="0 0 64 64" fill="none">
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M42 18 V46"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M19 18 L39 32 L19 46 V18 Z"/>
+  </symbol>
+  <symbol id="random" viewBox="0 0 64 64" fill="none">
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M13 21 H22 C30 21 33 43 42 43 H51"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M45 37 L52 43 L45 49"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M13 43 H22 C30 43 33 21 42 21 H51"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M45 15 L52 21 L45 27"/>
+  </symbol>
+  <symbol id="loop" viewBox="0 0 64 64" fill="none">
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M17 25 C17 20 20 17 25 17 H47"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M42 12 L49 17 L42 22"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M47 39 C47 44 44 47 39 47 H17"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M22 42 L15 47 L22 52"/>
+  </symbol>
+  <symbol id="volume_on" viewBox="0 0 64 64" fill="none">
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M15 26 H23 L36 17 V47 L23 38 H15 Z"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M43 25 C45 27 46 29 46 32 C46 35 45 37 43 39"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M49 20 C53 24 55 28 55 32 C55 36 53 40 49 44"/>
+  </symbol>
+  <symbol id="volume_off" viewBox="0 0 64 64" fill="none">
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M14 26 H22 L35 17 V47 L22 38 H14 Z"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M44 25 L55 39"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M55 25 L44 39"/>
+  </symbol>
+  <symbol id="cross_clicked" viewBox="0 0 64 64" fill="none">
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M20 20 L44 44"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M44 20 L20 44"/>
+  </symbol>
+  <symbol id="lock" viewBox="0 0 64 64" fill="none">
+  <rect stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" x="18" y="29" width="28" height="22" rx="4"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M23 29 V22 C23 14 28 10 32 10 C36 10 41 14 41 22 V29"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M32 38 V44"/>
+  </symbol>
+  <symbol id="menu" viewBox="0 0 64 64" fill="none">
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M18 21 H46"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M18 32 H46"/>
+  <path stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" d="M18 43 H46"/>
+  </symbol>
+</svg>

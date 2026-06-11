@@ -1,0 +1,17 @@
+[project]
+name = "meltake"
+version = "0.1.0"
+description = "Python rewrite of the MelTake music player and GLSL visualizer"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "mutagen>=1.47.0",
+    "numpy>=2.0.0",
+    "pyopengl>=3.1.7",
+    "pyside6>=6.8.0",
+    "shazamio>=0.8.1",
+    "yt-dlp>=2026.6.9",
+]
+
+[project.scripts]
+meltake = "main:main"

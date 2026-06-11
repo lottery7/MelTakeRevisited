@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-label="volume_on">
+  <defs>
+    <filter id="neon" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="0" stdDeviation="1.15" flood-color="#ff2aa3" flood-opacity="0.88"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="2.7" flood-color="#ff2aa3" flood-opacity="0.38"/>
+    </filter>
+    <style>
+      .icon { stroke: #ff5bb7; stroke-width: 3.25; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; filter: url(#neon); }
+    </style>
+  </defs>
+  <path class="icon" d="M15 26 H23 L36 17 V47 L23 38 H15 Z"/>
+  <path class="icon" d="M43 25 C45 27 46 29 46 32 C46 35 45 37 43 39"/>
+  <path class="icon" d="M49 20 C53 24 55 28 55 32 C55 36 53 40 49 44"/>
+</svg>
